@@ -756,6 +756,10 @@ function initCategoriesEditor() {
   // would steal focus from neighbouring fields).
   let suppressRebuild = false;
 
+  // Which categories are expanded (open) in the accordion. Indices into
+  // the categories array; default collapsed. Adjusted across reorders.
+  let expanded = new Set();
+
   function update(updater) {
     const next = structuredClone(Settings.get("categories"));
     updater(next);
@@ -806,8 +810,9 @@ function initCategoriesEditor() {
     list.forEach((cat, ci) => {
       const block = document.createElement("div");
       block.className = "cat-edit";
+      if (!expanded.has(ci)) block.classList.add("collapsed");
 
-      /* header: title input + hidden toggle + remove */
+      /* header: move, title, count, hidden, toggle, remove */
       const head = document.createElement("div");
       head.className = "cat-edit-head";
 
@@ -836,22 +841,53 @@ function initCategoriesEditor() {
 
       const removeCatBtn = makeIconBtn("✕", "Remove category", () => {
         if (!confirm(`Remove category “${cat.title || "untitled"}”?`)) return;
+        // Shift the expanded indices to match the new array.
+        const next = new Set();
+        expanded.forEach((i) => {
+          if (i !== ci) next.add(i > ci ? i - 1 : i);
+        });
+        expanded = next;
         update((arr) => arr.splice(ci, 1));
       });
 
+      const swapExpanded = (a, b) => {
+        const wasA = expanded.has(a);
+        const wasB = expanded.has(b);
+        expanded.delete(a);
+        expanded.delete(b);
+        if (wasA) expanded.add(b);
+        if (wasB) expanded.add(a);
+      };
+
       const catMove = makeMoveColumn(
         [ci === 0, ci === list.length - 1],
-        () =>
+        () => {
+          swapExpanded(ci, ci - 1);
           update((arr) => {
             [arr[ci - 1], arr[ci]] = [arr[ci], arr[ci - 1]];
-          }),
-        () =>
+          });
+        },
+        () => {
+          swapExpanded(ci, ci + 1);
           update((arr) => {
             [arr[ci], arr[ci + 1]] = [arr[ci + 1], arr[ci]];
-          })
+          });
+        }
       );
 
-      head.append(catMove, titleInput, hiddenLabel, removeCatBtn);
+      const count = document.createElement("span");
+      count.className = "item-count";
+      count.textContent = String(cat.items.length);
+      count.title = `${cat.items.length} item${cat.items.length === 1 ? "" : "s"}`;
+
+      const toggleBtn = makeIconBtn("▾", "Toggle items", () => {
+        if (expanded.has(ci)) expanded.delete(ci);
+        else expanded.add(ci);
+        block.classList.toggle("collapsed");
+      });
+      toggleBtn.classList.add("toggle-btn");
+
+      head.append(catMove, titleInput, count, hiddenLabel, toggleBtn, removeCatBtn);
       block.appendChild(head);
 
       /* items */
@@ -921,14 +957,20 @@ function initCategoriesEditor() {
         )
       );
 
-      block.append(itemsList, addItemBtn);
+      const body = document.createElement("div");
+      body.className = "cat-edit-body";
+      body.append(itemsList, addItemBtn);
+      block.appendChild(body);
       editor.appendChild(block);
     });
   }
 
-  addBtn.addEventListener("click", () =>
-    update((arr) => arr.push({ title: "Untitled", items: [] }))
-  );
+  addBtn.addEventListener("click", () => {
+    // Auto-expand the freshly added category so the user can fill items.
+    const newIdx = Settings.get("categories").length;
+    expanded.add(newIdx);
+    update((arr) => arr.push({ title: "Untitled", items: [] }));
+  });
 
   // Rebuild on structural changes / resets, not on inline text edits.
   Settings.onChange("categories", () => {

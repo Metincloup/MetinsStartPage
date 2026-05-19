@@ -789,6 +789,31 @@ body.settings-open .page {
   gap: 6px;
 }
 
+.cat-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cat-edit.collapsed .cat-edit-body {
+  display: none;
+}
+
+.item-count {
+  flex-shrink: 0;
+  padding: 0 2px;
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+}
+
+.toggle-btn {
+  transition: transform 0.2s ease;
+}
+
+.cat-edit.collapsed .toggle-btn {
+  transform: rotate(-90deg);
+}
+
 .cat-edit-head .text-input {
   flex: 1;
   font-weight: 600;
