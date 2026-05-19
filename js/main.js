@@ -1116,15 +1116,13 @@ function initBackground() {
     }
 
     // Blur applies to image / video backgrounds only (0-100% -> 0-40px).
-    // Scale up a touch so the blurred edges stay off-screen.
+    // No scale — that would visibly zoom the content; the blurred edges
+    // just fade toward the body bg colour, which reads as a soft vignette.
     const blurPx = (Number(Settings.get("bgBlur")) / 100) * 40;
-    if ((type === "image" || type === "video") && blurPx > 0) {
-      bg.style.filter = `blur(${blurPx}px)`;
-      bg.style.transform = "scale(1.18)";
-    } else {
-      bg.style.filter = "";
-      bg.style.transform = "";
-    }
+    bg.style.filter =
+      (type === "image" || type === "video") && blurPx > 0
+        ? `blur(${blurPx}px)`
+        : "";
   }
 
   // Show only the sub-options relevant to the current type

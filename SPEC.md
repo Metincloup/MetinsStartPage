@@ -20,7 +20,7 @@ Kaynak görseller: `/home/metin/.claude/image-cache/596404cd-82f0-4acb-9fc4-a0dc
 - Waves: yavaşça süzülen, blur'lu 3 dalga katmanı (dark/light temaya duyarlı). `prefers-reduced-motion` ile durur.
 - Solid: renk seçici.
 - Image / Video: kullanıcı ya URL verir ya da dosya yükler. Yüklenen dosyalar IndexedDB'de (`FileStore`) saklanır — localStorage video için yetersiz. URL ve upload arasında `mode` ile geçiş yapılır; "Reset settings" yüklenenleri de temizler.
-- Image / Video için **blur slider** (0-100% → 0-40px) — arka plan bulanıklığı ayarlanır; bulanıkken kenar taşmasını gizlemek için arka plan hafif ölçeklenir.
+- Image / Video için **blur slider** (0-100% → 0-40px) — arka plan bulanıklığı ayarlanır. Kenarlarda blur `--bg` rengine fade eder (yumuşak vignette); içerik ölçeklenmez (zoom-in olmaz).
 - Cam (glassmorphism) yüzeyler (kartlar, search bar, paneller, öneri kutusu) arka planı `backdrop-filter` ile bulanıklaştırır → 3D camsı görünüm.
 - Dark estetik korunuyor.
 

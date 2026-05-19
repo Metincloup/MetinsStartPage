@@ -90,6 +90,27 @@ body {
   transition: background 0.35s ease, color 0.35s ease;
 }
 
+/* Theme-aware scrollbars (Firefox + WebKit) */
+html {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-dim);
+}
+
 /* ---- Background layer (waves / solid / image / video) -- */
 .bg {
   position: fixed;
