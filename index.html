@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Background layer — type chosen in settings (waves / solid / image / video) -->
+  <div class="bg" id="bg" data-bg="waves" aria-hidden="true">
+    <svg class="bg-waves" viewBox="0 0 1440 800" preserveAspectRatio="none">
+      <path class="wave wave-3" d="M-360,220 C120,140 480,300 840,220 C1140,150 1440,300 1800,230 L1800,800 L-360,800 Z" />
+      <path class="wave wave-2" d="M-360,380 C180,300 520,460 900,380 C1200,310 1500,460 1800,390 L1800,800 L-360,800 Z" />
+      <path class="wave wave-1" d="M-360,520 C150,440 540,600 920,520 C1240,450 1520,600 1800,530 L1800,800 L-360,800 Z" />
+    </svg>
+    <video class="bg-video" id="bgVideo" muted loop playsinline></video>
+  </div>
+
+  <!-- Soft light that follows the cursor (visual improvement #8) -->
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <!-- Settings menu: slides in from the left -->
+  <aside class="settings-panel" id="settingsPanel" aria-hidden="true" aria-label="Settings">
+    <header class="settings-head">
+      <h2 class="settings-title">Settings</h2>
+      <button class="icon-btn close" id="settingsClose" aria-label="Close settings" title="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12 5.7 16.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4z" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="settings-body">
+      <section class="settings-section">
+        <h3 class="settings-section-title">General</h3>
+
+        <div class="setting-row">
+          <span class="setting-label">Theme</span>
+          <div class="seg" data-setting="theme" role="group" aria-label="Theme">
+            <button type="button" class="seg-btn" data-value="dark">Dark</button>
+            <button type="button" class="seg-btn" data-value="light">Light</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Clock format</span>
+          <div class="seg" data-setting="clockFormat" role="group" aria-label="Clock format">
+            <button type="button" class="seg-btn" data-value="12">12-hour</button>
+            <button type="button" class="seg-btn" data-value="24">24-hour</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Clock style</span>
+          <select class="select" data-setting="clockStyle" aria-label="Clock style">
+            <option value="minimal">Minimal</option>
+            <option value="outline">Outline</option>
+            <option value="glow">Glow</option>
+            <option value="gradient">Gradient</option>
+            <option value="glass">Glass</option>
+          </select>
+        </div>
+
+        <div class="setting-row clock-opt" data-clock-opt="clockStyle:glass">
+          <span class="setting-label">Glass tint</span>
+          <div class="palette" id="clockTintPalette" role="group" aria-label="Glass tint"></div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Clock color</span>
+          <div class="seg" data-setting="clockColorMode" role="group" aria-label="Clock color">
+            <button type="button" class="seg-btn" data-value="theme">Theme</button>
+            <button type="button" class="seg-btn" data-value="custom">Custom</button>
+          </div>
+        </div>
+
+        <div class="setting-row clock-opt" data-clock-opt="clockColorMode:custom">
+          <span class="setting-label">Custom color</span>
+          <input type="color" class="color-input" data-clock-input="color" aria-label="Clock color" />
+        </div>
+
+        <div class="setting-row clock-opt" data-clock-opt="clockColorMode:custom">
+          <span class="setting-label">Color opacity</span>
+          <div class="range-wrap">
+            <input type="range" class="range-input" data-clock-input="opacity" min="0" max="100" step="1" aria-label="Clock color opacity" />
+            <span class="range-value" data-clock-range-value="opacity">100%</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Clock blur</span>
+          <div class="range-wrap">
+            <input type="range" class="range-input" data-clock-input="blur" min="0" max="100" step="1" aria-label="Clock blur" />
+            <span class="range-value" data-clock-range-value="blur">0%</span>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <span class="setting-label">Default search engine</span>
+          <div class="radio-list" id="engineRadios" data-setting="engine"></div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-section-title">Fonts</h3>
+
+        <div class="setting-row">
+          <span class="setting-label">Clock</span>
+          <select class="select" data-setting="fontClock" aria-label="Clock font">
+            <option value="system">System</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Mono</option>
+            <option value="rounded">Rounded</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Search bar</span>
+          <select class="select" data-setting="fontSearch" aria-label="Search bar font">
+            <option value="system">System</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Mono</option>
+            <option value="rounded">Rounded</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Cards</span>
+          <select class="select" data-setting="fontCards" aria-label="Cards font">
+            <option value="system">System</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Mono</option>
+            <option value="rounded">Rounded</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-section-title">Background</h3>
+
+        <div class="setting-row">
+          <span class="setting-label">Type</span>
+          <select class="select" data-setting="bgType" aria-label="Background type">
+            <option value="waves">Waves (animated)</option>
+            <option value="solid">Solid color</option>
+            <option value="image">Image / GIF</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+
+        <div class="setting-row bg-opt" data-bg-opt="solid">
+          <span class="setting-label">Color</span>
+          <input type="color" class="color-input" data-bg-input="color" aria-label="Background color" />
+        </div>
+
+        <div class="setting-row column bg-opt" data-bg-opt="image">
+          <span class="setting-label">Image / GIF URL</span>
+          <input type="url" class="text-input" data-bg-input="image-url" placeholder="https://example.com/bg.gif" />
+          <button type="button" class="btn" data-bg-upload="image">Upload image…</button>
+          <input type="file" accept="image/*" hidden data-bg-file="image" />
+        </div>
+
+        <div class="setting-row column bg-opt" data-bg-opt="video">
+          <span class="setting-label">Video URL</span>
+          <input type="url" class="text-input" data-bg-input="video-url" placeholder="https://example.com/bg.mp4" />
+          <button type="button" class="btn" data-bg-upload="video">Upload video…</button>
+          <input type="file" accept="video/*" hidden data-bg-file="video" />
+        </div>
+
+        <div class="setting-row bg-opt" data-bg-opt="image video">
+          <span class="setting-label">Blur</span>
+          <div class="range-wrap">
+            <input type="range" class="range-input" data-bg-input="blur" min="0" max="100" step="1" aria-label="Background blur" />
+            <span class="range-value" data-bg-range-value="blur">0%</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-section-title">Categories</h3>
+        <div class="cat-editor" id="categoryEditor"></div>
+        <button type="button" class="btn ghost" id="addCategoryBtn">+ Add category</button>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-section-title">Misc</h3>
+        <div class="setting-row">
+          <span class="setting-label">Restore defaults</span>
+          <button type="button" class="btn" id="resetBtn">Reset settings</button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <div class="page">
+    <!-- Top bar: gear (settings) left, sun/moon (theme) right -->
+    <header class="topbar">
+      <button class="icon-btn gear" id="settingsBtn" aria-label="Open settings" title="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
+        </svg>
+      </button>
+
+      <button class="icon-btn theme" id="themeBtn" aria-label="Toggle dark / light mode" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+        </svg>
+      </button>
+    </header>
+
+    <main class="content">
+      <!-- Clock: click to toggle 12h / 24h -->
+      <section class="clock" id="clock" title="Click to switch 12h / 24h">
+        <time class="clock-time" id="clockTime">--:--</time>
+      </section>
+
+      <!-- Search bar with switchable engines + category suggestions -->
+      <section class="search">
+        <form class="search-bar" id="searchForm" autocomplete="off">
+          <div class="engines" id="engines" role="group" aria-label="Search engine"></div>
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search on Google…"
+            aria-label="Search query"
+          />
+        </form>
+        <ul class="suggestions" id="suggestions" role="listbox" aria-label="Category suggestions" hidden></ul>
+      </section>
+
+      <!-- Category cards (rendered by JS from the categories data) -->
+      <section class="categories" id="categories" aria-label="Shortcuts"></section>
+    </main>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

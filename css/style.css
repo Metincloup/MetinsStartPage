@@ -1,0 +1,929 @@
+/* =========================================================
+   Browser Home Page — Stage 1: base layout + theming
+   See SPEC.md for the full spec.
+   ========================================================= */
+
+/* ---- Theme tokens -------------------------------------- */
+:root {
+  --bg: #14161a;
+  --bg-soft: #1c1f26;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --fg: #e8eaed;
+  --fg-dim: #9aa0a6;
+  --accent: #7aa2f7;
+  --glow: rgba(122, 162, 247, 0.45);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --cursor-glow-color: rgba(255, 255, 255, 0.07);
+
+  /* Glassmorphism surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.055);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.20);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.46);
+  --glass-shadow-lift: 0 18px 48px rgba(0, 0, 0, 0.55);
+  --panel-bg: rgba(22, 24, 30, 0.82);
+
+  /* Animated wave background */
+  --wave-1: rgba(122, 162, 247, 0.13);
+  --wave-2: rgba(157, 124, 216, 0.10);
+  --wave-3: rgba(122, 162, 247, 0.06);
+
+  /* Settings panel width — clamped so rows stay readable on any screen */
+  --settings-w: clamp(340px, 32%, 440px);
+
+  /* Per-component fonts (overridden at runtime by the Fonts settings) */
+  --font-clock: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-search: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-cards: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Clock colour — tracks the theme unless a custom colour is set */
+  --clock-color: var(--fg);
+}
+
+:root[data-theme="light"] {
+  --bg: #f3f4f6;
+  --bg-soft: #e9eaee;
+  --surface: rgba(0, 0, 0, 0.035);
+  --surface-hover: rgba(0, 0, 0, 0.07);
+  --border: rgba(0, 0, 0, 0.10);
+  --border-strong: rgba(0, 0, 0, 0.25);
+  --fg: #1f2127;
+  --fg-dim: #5f6368;
+  --accent: #3b6fe0;
+  --glow: rgba(59, 111, 224, 0.35);
+  --shadow: rgba(0, 0, 0, 0.15);
+  --cursor-glow-color: rgba(0, 0, 0, 0.06);
+
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.12);
+  --glass-shadow-lift: 0 18px 48px rgba(0, 0, 0, 0.18);
+  --panel-bg: rgba(240, 241, 244, 0.84);
+
+  --wave-1: rgba(59, 111, 224, 0.12);
+  --wave-2: rgba(157, 124, 216, 0.12);
+  --wave-3: rgba(59, 111, 224, 0.07);
+}
+
+/* ---- Reset --------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* ---- Background layer (waves / solid / image / video) -- */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: var(--bg);
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-waves {
+  position: absolute;
+  top: -8%;
+  left: -12%;
+  width: 124%;
+  height: 116%;
+  filter: blur(6px);
+}
+
+/* Waves only render when the background type is "waves" */
+.bg:not([data-bg="waves"]) .bg-waves {
+  display: none;
+}
+
+.bg-video {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bg[data-bg="video"] .bg-video {
+  display: block;
+}
+
+.wave {
+  will-change: transform;
+}
+
+.wave-1 {
+  fill: var(--wave-1);
+  animation: wave-drift 17s ease-in-out infinite alternate;
+}
+.wave-2 {
+  fill: var(--wave-2);
+  animation: wave-drift 23s ease-in-out infinite alternate-reverse;
+}
+.wave-3 {
+  fill: var(--wave-3);
+  animation: wave-drift 29s ease-in-out infinite alternate;
+}
+
+@keyframes wave-drift {
+  from {
+    transform: translate(-110px, 6px);
+  }
+  to {
+    transform: translate(110px, -22px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave {
+    animation: none;
+  }
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* ---- Page shell ---------------------------------------- */
+.page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Top bar ------------------------------------------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 22px;
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--fg-dim);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.25s ease;
+}
+
+.icon-btn:hover {
+  color: var(--fg);
+  background: var(--surface-hover);
+}
+
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* Visual improvement #1: gear rotates on hover */
+.icon-btn.gear:hover svg {
+  transform: rotate(90deg);
+  transition: transform 0.4s ease;
+}
+
+/* Show sun in dark mode (click -> go light), moon in light mode */
+.icon-btn.theme .icon-moon {
+  display: none;
+}
+:root[data-theme="light"] .icon-btn.theme .icon-sun {
+  display: none;
+}
+:root[data-theme="light"] .icon-btn.theme .icon-moon {
+  display: block;
+}
+
+/* ---- Main content -------------------------------------- */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  padding: 20px 22px 80px;
+}
+
+/* ---- Clock --------------------------------------------- */
+.clock {
+  user-select: none;
+  cursor: pointer;
+}
+
+.clock-time {
+  font-family: var(--font-clock);
+  font-size: clamp(4rem, 14vw, 9rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--clock-color);
+}
+
+/* Clock styles / themes — all honour --clock-color */
+.clock-time--outline {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--clock-color);
+}
+
+.clock-time--glow {
+  color: var(--clock-color);
+  text-shadow: 0 0 18px currentColor, 0 0 44px currentColor;
+}
+
+.clock-time--gradient {
+  background: linear-gradient(135deg, var(--clock-color), #c678dd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Frosted-glass panel around the clock; tint set by the palette */
+.clock-time--glass {
+  display: inline-block;
+  padding: 0.1em 0.32em;
+  color: var(--clock-color);
+  background: var(--clock-glass-tint, rgba(255, 255, 255, 0.07));
+  border: 1px solid var(--glass-border);
+  border-radius: 0.16em;
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* ---- Search -------------------------------------------- */
+.search {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 14px;
+  /* Visual improvement #3: fully transparent until focused */
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: border-color 0.2s ease, background 0.2s ease,
+    box-shadow 0.25s ease, backdrop-filter 0.2s ease;
+}
+
+.search-bar:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* Visual improvement #2: rich 3D glass when focused */
+.search-bar:focus-within {
+  background: var(--glass-bg);
+  border-color: var(--border-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+.engines {
+  display: flex;
+  gap: 4px;
+}
+
+.engine-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  opacity: 0.45;
+  transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.engine-btn:hover {
+  opacity: 0.8;
+}
+
+.engine-btn.active {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring);
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 6px;
+  font-family: var(--font-search);
+  font-size: 1.05rem;
+  color: var(--fg);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--fg-dim);
+}
+
+/* Category-search suggestions dropdown */
+.suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  list-style: none;
+  padding: 6px;
+  background: var(--panel-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.suggestion.active,
+.suggestion:hover {
+  background: var(--surface-hover);
+}
+
+.suggestion .s-icon {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.suggestion .s-name {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.suggestion .s-cat {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--fg-dim);
+}
+
+/* ---- Category cards ------------------------------------ */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 760px;
+}
+
+/* Visual improvement #2: 3D frosted-glass cards */
+.cat-card {
+  width: 210px;
+  font-family: var(--font-cards);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.cat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--glass-shadow-lift), inset 0 1px 0 var(--glass-highlight);
+}
+
+.cat-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-dim);
+  margin-bottom: 10px;
+}
+
+.cat-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Scrollable only when a card has too many items (spec: > 4-5) */
+.cat-items--scroll {
+  max-height: 204px;
+  overflow-y: auto;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+/* Visual improvement #6: hovered category items glow */
+.cat-item:hover {
+  background: var(--surface-hover);
+  color: var(--accent);
+  box-shadow: 0 0 16px -3px var(--glow);
+}
+
+.cat-item .item-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Real site favicon (Stage 5) — falls back to the emoji on load error */
+.item-favicon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+/* ---- Scrollbar ----------------------------------------- */
+.cat-items::-webkit-scrollbar {
+  width: 6px;
+}
+.cat-items::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+/* ---- Settings menu (40 / 60 split) --------------------- */
+.settings-panel {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--settings-w);
+  background: var(--panel-bg);
+  border-right: 1px solid var(--glass-border);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  z-index: 50;
+}
+
+body.settings-open .settings-panel {
+  transform: translateX(0);
+  box-shadow: 0 0 40px var(--shadow);
+}
+
+/* The page squashes into the remaining 60% */
+.page {
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.settings-open .page {
+  margin-left: var(--settings-w);
+  width: calc(100% - var(--settings-w));
+}
+
+.settings-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 14px 20px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.settings-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.settings-body {
+  padding: 18px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-section-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--fg-dim);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.setting-row.column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.setting-label {
+  font-size: 0.95rem;
+}
+
+/* Segmented control (theme, clock format) */
+.seg {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.seg-btn {
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: var(--fg-dim);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.seg-btn:hover {
+  color: var(--fg);
+}
+
+.seg-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Dropdown select (settings with many options, e.g. clock style).
+   Native arrow removed + solid bg so the menu isn't a white block in
+   dark mode; the option list is themed explicitly below. */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 7px 30px 7px 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--fg);
+  background-color: var(--bg-soft);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' fill='none' stroke='%23888888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  background-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.select:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.select option {
+  background: var(--bg-soft);
+  color: var(--fg);
+}
+
+/* Radio list (search engine) */
+.radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s ease;
+}
+
+.radio-row:hover {
+  background: var(--surface-hover);
+}
+
+.radio-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+/* Generic button */
+.btn {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+/* Text / URL input (background image & video URLs) */
+.text-input {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.text-input:focus {
+  border-color: var(--border-strong);
+}
+
+.text-input::placeholder {
+  color: var(--fg-dim);
+}
+
+/* Colour picker (solid background) */
+.color-input {
+  width: 48px;
+  height: 32px;
+  padding: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Colour palette (clock glass tint) */
+.palette {
+  display: flex;
+  gap: 6px;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.swatch:hover {
+  transform: scale(1.12);
+}
+
+.swatch.active {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Categories editor (settings) */
+.cat-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cat-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.cat-edit-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cat-edit-head .text-input {
+  flex: 1;
+  font-weight: 600;
+}
+
+.cat-edit-hidden {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--fg-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cat-edit-hidden input {
+  accent-color: var(--accent);
+}
+
+.cat-edit-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cat-edit-item {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.cat-edit-item-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Reorder controls (↑ ↓ stacked) — used for both items and categories */
+.move-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.move-btn {
+  padding: 1px 7px;
+  font-size: 0.6rem;
+  line-height: 1.25;
+  color: var(--fg-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.move-btn:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--surface-hover);
+}
+
+.move-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.btn.icon-only {
+  padding: 6px 10px;
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 0.9rem;
+}
+
+.btn.ghost {
+  align-self: flex-start;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+
+.btn.ghost:hover {
+  background: var(--surface-hover);
+  border-style: solid;
+}
+
+/* Conditional setting rows — shown by JS when their option is active */
+.bg-opt,
+.clock-opt {
+  display: none;
+}
+
+/* Range slider (background blur amount) */
+.range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-input {
+  width: 130px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.range-value {
+  min-width: 34px;
+  font-size: 0.82rem;
+  color: var(--fg-dim);
+  text-align: right;
+}
+
+/* ---- Cursor glow (visual improvement #8) --------------- */
+/* Soft light that follows the cursor — white-ish in dark mode,
+   dark-ish in light mode. Sits behind page content. */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle closest-side,
+    var(--cursor-glow-color),
+    transparent
+  );
+  transition: opacity 0.35s ease;
+}
+
+body.has-cursor .cursor-glow {
+  opacity: 1;
+}
+
+/* ---- Responsive ---------------------------------------- */
+@media (max-width: 640px) {
+  /* Too narrow to squash — settings panel overlays the page instead */
+  .settings-panel {
+    width: 100%;
+  }
+  body.settings-open .page {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .cat-card {
+    width: 100%;
+  }
+}
