@@ -1,7 +1,7 @@
 # Browser Home Page — Spec
 
 El çizimi 3 sayfalık bir defter sketch'inden çıkarıldı.
-Kaynak görseller: `/home/metin/.claude/image-cache/596404cd-82f0-4acb-9fc4-a0dcb29c9c47/{1,2,3}.png`
+Kaynak görseller: `./sketches/{1,2,3}.png`
 
 ## Genel Bakış
 Özel bir tarayıcı ana sayfası / yeni sekme sayfası.
