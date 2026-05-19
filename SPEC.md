@@ -4,9 +4,11 @@ El çizimi 3 sayfalık bir defter sketch'inden çıkarıldı.
 Kaynak görseller: `./sketches/{1,2,3}.png`
 
 ## Genel Bakış
+
 Özel bir tarayıcı ana sayfası / yeni sekme sayfası.
 
 ## Yerleşim — Ana Sayfa
+
 - **Sol üst:** Dişli / ayar ikonu (asteriks tarzı ✻). Ayarlar menüsünü açar. İleride burger ikona dönüşebilir.
 - **Üst orta:** Büyük saat göstergesi (ör. `9.41`).
 - **Sağ üst:** Güneş/ay ikonu — dark/light mod toggle.
@@ -16,6 +18,7 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 ## Bileşenler
 
 ### Background
+
 - Arka plan tipi ayarlardan seçilir: **Waves** (animasyonlu CSS dalga), **Solid** (tek renk), **Image / GIF**, **Video**.
 - Waves: yavaşça süzülen, blur'lu 3 dalga katmanı (dark/light temaya duyarlı). `prefers-reduced-motion` ile durur.
 - Solid: renk seçici.
@@ -25,11 +28,13 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - Dark estetik korunuyor.
 
 ### Dişli & Güneş/Ay
+
 - Güneş/ay ikonu → dark/light mod toggle.
 - Dişli ikonu → ayarlar menüsünü açar.
 - Dişli ileride burger ikona değişebilir.
 
 ### Clock (Saat)
+
 - Büyük gösterge.
 - Birden fazla saat stili / tema (varyasyonlar) — sketch'te varyasyon olduğunu belli etmek için "garip" stilize bir saat çizilmiş.
 - Uygulanan görsel temalar: Minimal, Outline, Glow, Gradient, Glass (genişletilebilir).
@@ -40,6 +45,7 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - 24 saat ve 12 saat versiyonları.
 
 ### Search Bar (Arama Çubuğu)
+
 - Varsayılan motorla arama ("Search on Google…").
 - İkonlara tıklayarak motor değiştirilir — Google, DuckDuckGo, Bing.
 - "Search on Categories…" modu — kategoriler içinde arama; görünür veya gizli kategorileri gösterebilir.
@@ -49,6 +55,7 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - `Shift+1–4` arama kutusu odaktayken yoksayılır — böylece `Shift+1` ile `!` (bang) yazılabilir, `@ # $` normal çalışır.
 
 ### Category Cards (Kategori Kartları)
+
 - Kategoriler ve içlerindeki siteler ayarlardaki **Categories** bölümünden eklenip kaldırılabilir; başlık, "Hidden" flag, site adı ve URL inline düzenlenir. Liste `Settings.get("categories")` üzerinden tek kaynaktan beslenir; kartlar ve arama önerileri değişimleri otomatik yansıtır. Reset varsayılan listeyi geri yükler.
 
 - Her kartın bir başlığı (ör. "Category1") ve item listesi var.
@@ -58,6 +65,7 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - İkonlar sitelerin gerçek favicon'larıdır (DuckDuckGo favicon servisi: `icons.duckduckgo.com/ip3/<domain>.ico`); yüklenemezse veri modelindeki emoji'ye fallback yapar.
 
 ### Settings Menu (Ayarlar Menüsü)
+
 - Dişli ikonundan açılır.
 - Sketch'te **%40 / %60** olarak çizilmişti; uygulamada `clamp(340px, 32%, 440px)` olarak revize edildi (büyük ekranda ~%30, ama ayar satırları her ekranda okunaklı kalsın diye min/max sınırlı). Sayfanın geri kalanı kalan alana sıkıştırılır.
 - Çok fazla ayar olursa scrollable olur.
@@ -67,6 +75,7 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - Örnek bölümler: General (toggle'lar, radio gruplar), Misc (text area, butonlar), vb.
 
 ## Görsel İyileştirmeler (Visual Improvements)
+
 1. Dişli ikonu mouse hover'da döner.
 2. Bazı bileşenler hover'da: opacity artar / blur azalır — ya da "buzlu cam" (blurry glass) görünümü alır.
 3. Arama çubuğu focus değilken tamamen şeffaf (sadece metin ve outline görünür); focus'ta / arama yaparken solid olur.

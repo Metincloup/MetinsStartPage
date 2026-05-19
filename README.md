@@ -5,15 +5,12 @@
 A custom new-tab / start page built from a hand-drawn notebook sketch.
 Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 
-> If you can see this on GitHub before the sketch images have been added,
-> drop your three sketch photos into `sketches/` as `1.png`, `2.png`, `3.png`
-> and they'll appear in the gallery at the bottom of this README.
-
 ---
 
 ## Features
 
 ### Clock
+
 - Live time, click to flip between 12-hour and 24-hour formats
 - Five visual themes: **Minimal**, **Outline**, **Glow**, **Gradient**, **Glass**
 - Custom colour with opacity (`rgba` via a hex picker + opacity slider)
@@ -21,6 +18,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - The **Glass** theme has a tint palette (six soft colours)
 
 ### Search
+
 - Three default engines (Google, DuckDuckGo, Bing); switch by clicking icons
   or pressing `Shift+1` … `Shift+4`
 - Engine changes from icons / shortcuts are **transient** — the persisted
@@ -33,6 +31,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - Hidden categories are searchable but don't render as cards
 
 ### Categories (shortcut cards)
+
 - Add / rename / remove / **reorder** categories and the sites inside them
   from the settings menu (accordion editor with an item-count badge)
 - Icons are real site favicons (DuckDuckGo's icon service) with an
@@ -40,6 +39,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - Cards scroll internally when a category has more than five items
 
 ### Background
+
 - Four types, switchable from settings:
   - **Waves** — animated SVG layers drifting slowly (respects
     `prefers-reduced-motion`)
@@ -52,6 +52,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
   blurred edges just fade into the page colour)
 
 ### Visual polish
+
 - Real glassmorphism on cards, search bar, settings panel and the search
   suggestion dropdown — `backdrop-filter: blur() saturate()`, a
   light-catching border, layered shadows, and a subtle lift on hover
@@ -62,6 +63,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - Gear icon rotates on hover; scrollbars are theme-aware
 
 ### Settings menu
+
 - Slides in from the left, taking `clamp(340px, 32%, 440px)` of the viewport
   and squashing the rest of the page to make room
 - Sections: **General**, **Fonts**, **Background**, **Categories**, **Misc**
@@ -71,6 +73,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - "Reset settings" returns everything to defaults and wipes uploaded media
 
 ### Persistence
+
 - Every setting persists in `localStorage` under the `hp.` prefix
 - Uploaded background media persists in IndexedDB (`hp-files`)
 - The active search engine for the session resets to the saved default
@@ -154,9 +157,9 @@ read.
 
 ## The original sketch
 
-| Page 1 — main layout | Page 2 — cards & settings | Page 3 — visual ideas |
-| --- | --- | --- |
-| ![Page 1](sketches/1.png) | ![Page 2](sketches/2.png) | ![Page 3](sketches/3.png) |
+| Page 1 — main layout       | Page 2 — cards & settings  | Page 3 — visual ideas      |
+| -------------------------- | -------------------------- | -------------------------- |
+| ![Page 1](sketches/1.jpeg) | ![Page 2](sketches/2.jpeg) | ![Page 3](sketches/3.jpeg) |
 
 ## License
 

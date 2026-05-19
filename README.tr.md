@@ -6,15 +6,12 @@ El çizimi bir defter sketch'inden yola çıkılarak yapılmış, kişiye özel 
 new-tab / başlangıç sayfası. Saf HTML, CSS ve JavaScript — build adımı yok,
 bağımlılığı yok.
 
-> Bu README'yi GitHub'da sketch resimleri eklenmeden görüyorsan,
-> defterindeki 3 sketch fotoğrafını `sketches/` klasörüne `1.png`, `2.png`,
-> `3.png` olarak at — README'nin altındaki galeride otomatik görünür.
-
 ---
 
 ## Özellikler
 
 ### Saat
+
 - Canlı saat — tıklayarak 12 / 24 saat formatları arasında geçiş
 - Beş görsel tema: **Minimal**, **Outline**, **Glow**, **Gradient**, **Glass**
 - Özel renk + opaklık (hex picker + slider, `rgba` üretir)
@@ -22,6 +19,7 @@ bağımlılığı yok.
 - **Glass** temasının kendi renk paleti (6 yumuşak ton, camı hafifçe boyar)
 
 ### Arama
+
 - Üç varsayılan motor (Google, DuckDuckGo, Bing); ikona tıklayarak veya
   `Shift+1`–`Shift+4` ile geçiş
 - İkon / kısayolla yapılan değişim **geçicidir** — ayarlardaki kalıcı
@@ -34,6 +32,7 @@ bağımlılığı yok.
 - "Hidden" kategoriler kart olarak gözükmez ama aramada çıkar
 
 ### Kategori kartları
+
 - Ayarlardaki accordion editörden kategori ekle / sil / yeniden adlandır /
   **sırasını değiştir**; site (item) için de aynı işlemler
 - İkonlar gerçek site favicon'larıdır (DuckDuckGo ikon servisi); yüklenemezse
@@ -41,6 +40,7 @@ bağımlılığı yok.
 - Bir kategori 5'ten fazla item içerdiğinde kart kendi içinde scroll olur
 
 ### Arka plan
+
 - Ayarlardan dört seçenek arasında geçiş:
   - **Waves** — yavaşça süzülen animasyonlu SVG katmanları
     (`prefers-reduced-motion` aktifse durur)
@@ -53,6 +53,7 @@ bağımlılığı yok.
   sayfa rengine doğru yumuşakça fade eder
 
 ### Görsel cila
+
 - Kartlar, arama çubuğu, ayar paneli ve öneri kutusunda gerçek
   glassmorphism — `backdrop-filter: blur() saturate()`, ışık yakalayan
   border, katmanlı gölge, hover'da hafif lift
@@ -62,6 +63,7 @@ bağımlılığı yok.
 - Dişli ikon hover'da döner; scrollbar'lar temaya duyarlıdır
 
 ### Ayarlar menüsü
+
 - Soldan kayarak açılır, viewport'un `clamp(340px, 32%, 440px)` kadarını
   kaplar, sayfanın geri kalanı kalan alana sıkışır
 - Bölümler: **General**, **Fonts**, **Background**, **Categories**, **Misc**
@@ -71,6 +73,7 @@ bağımlılığı yok.
 - "Reset settings" her şeyi varsayılana döndürür + yüklenen medyayı siler
 
 ### Kalıcılık
+
 - Tüm ayarlar `localStorage`'da `hp.` prefiksi altında
 - Yüklenen arka plan medyası IndexedDB'de (`hp-files`)
 - Oturumda kullanılan arama motoru yenilemede varsayılana döner
@@ -149,9 +152,9 @@ item sayısı rozetli accordion editör, temaya duyarlı scrollbar'lar, …
 
 ## Orijinal sketch
 
-| Sayfa 1 — ana yerleşim | Sayfa 2 — kart & ayarlar | Sayfa 3 — görsel fikirler |
-| --- | --- | --- |
-| ![Sayfa 1](sketches/1.png) | ![Sayfa 2](sketches/2.png) | ![Sayfa 3](sketches/3.png) |
+| Sayfa 1 — ana yerleşim      | Sayfa 2 — kart & ayarlar    | Sayfa 3 — görsel fikirler   |
+| --------------------------- | --------------------------- | --------------------------- |
+| ![Sayfa 1](sketches/1.jpeg) | ![Sayfa 2](sketches/2.jpeg) | ![Sayfa 3](sketches/3.jpeg) |
 
 ## Lisans
 
