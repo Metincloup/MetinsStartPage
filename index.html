@@ -33,8 +33,11 @@
 
     <div class="settings-body">
       <section class="settings-section">
-        <h3 class="settings-section-title">General</h3>
-
+        <details class="drawer" data-drawer="general" open>
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">General</h3>
+          </summary>
+          <div class="drawer-body">
         <div class="setting-row">
           <span class="setting-label">Theme</span>
           <div class="seg" data-setting="theme" role="group" aria-label="Theme">
@@ -67,6 +70,14 @@
           <div class="palette" id="clockTintPalette" role="group" aria-label="Glass tint"></div>
         </div>
 
+        <div class="setting-row clock-opt" data-clock-opt="clockStyle:outline">
+          <span class="setting-label">Outline width</span>
+          <div class="range-wrap">
+            <input type="range" class="range-input" data-clock-input="outlineWidth" min="1" max="8" step="1" aria-label="Outline width" />
+            <span class="range-value" data-clock-range-value="outlineWidth">2px</span>
+          </div>
+        </div>
+
         <div class="setting-row">
           <span class="setting-label">Clock color</span>
           <div class="seg" data-setting="clockColorMode" role="group" aria-label="Clock color">
@@ -96,14 +107,28 @@
           </div>
         </div>
 
+        <div class="setting-row">
+          <span class="setting-label">Clock size</span>
+          <div class="range-wrap">
+            <input type="range" class="range-input" data-clock-input="size" min="50" max="200" step="5" aria-label="Clock size" />
+            <span class="range-value" data-clock-range-value="size">100%</span>
+          </div>
+        </div>
+
         <div class="setting-row column">
           <span class="setting-label">Default search engine</span>
           <div class="radio-list" id="engineRadios" data-setting="engine"></div>
         </div>
+          </div>
+        </details>
       </section>
 
       <section class="settings-section">
-        <h3 class="settings-section-title">Fonts</h3>
+        <details class="drawer" data-drawer="fonts">
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">Fonts</h3>
+          </summary>
+          <div class="drawer-body">
 
         <div class="setting-row">
           <span class="setting-label">Clock</span>
@@ -134,10 +159,16 @@
             <option value="rounded">Rounded</option>
           </select>
         </div>
+          </div>
+        </details>
       </section>
 
       <section class="settings-section">
-        <h3 class="settings-section-title">Background</h3>
+        <details class="drawer" data-drawer="background">
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">Background</h3>
+          </summary>
+          <div class="drawer-body">
 
         <div class="setting-row">
           <span class="setting-label">Type</span>
@@ -175,20 +206,104 @@
             <span class="range-value" data-bg-range-value="blur">0%</span>
           </div>
         </div>
+          </div>
+        </details>
       </section>
 
       <section class="settings-section">
-        <h3 class="settings-section-title">Categories</h3>
-        <div class="cat-editor" id="categoryEditor"></div>
-        <button type="button" class="btn ghost" id="addCategoryBtn">+ Add category</button>
+        <details class="drawer" data-drawer="components">
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">Components</h3>
+            <span class="drawer-hint">show / hide</span>
+          </summary>
+          <div class="drawer-body">
+            <div class="setting-row">
+              <span class="setting-label">Clock</span>
+              <div class="seg" data-setting="showClock" role="group" aria-label="Show clock">
+                <button type="button" class="seg-btn" data-value="show">Show</button>
+                <button type="button" class="seg-btn" data-value="hide">Hide</button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">Search bar</span>
+              <div class="seg" data-setting="showSearch" role="group" aria-label="Show search bar">
+                <button type="button" class="seg-btn" data-value="show">Show</button>
+                <button type="button" class="seg-btn" data-value="hide">Hide</button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">Categories</span>
+              <div class="seg" data-setting="showCategories" role="group" aria-label="Show categories">
+                <button type="button" class="seg-btn" data-value="show">Show</button>
+                <button type="button" class="seg-btn" data-value="hide">Hide</button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <span class="setting-label">Theme button</span>
+              <div class="seg" data-setting="showThemeBtn" role="group" aria-label="Show theme button">
+                <button type="button" class="seg-btn" data-value="show">Show</button>
+                <button type="button" class="seg-btn" data-value="hide">Hide</button>
+              </div>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section class="settings-section">
-        <h3 class="settings-section-title">Misc</h3>
+        <details class="drawer" data-drawer="categories">
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">Categories</h3>
+          </summary>
+          <div class="drawer-body">
+            <div class="setting-row">
+              <span class="setting-label">Per row</span>
+              <select class="select" data-setting="categoryColumns" aria-label="Categories per row">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+            <div class="cat-editor" id="categoryEditor"></div>
+            <button type="button" class="btn ghost" id="addCategoryBtn">+ Add category</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="settings-section">
+        <details class="drawer" data-drawer="misc">
+          <summary class="drawer-summary">
+            <h3 class="settings-section-title">Misc</h3>
+          </summary>
+          <div class="drawer-body">
+
+        <div class="setting-row">
+          <span class="setting-label" title="In Dual mode each theme has its own clock, fonts and background.">Config mode</span>
+          <div class="seg" data-setting="configMode" role="group" aria-label="Configuration mode">
+            <button type="button" class="seg-btn" data-value="single" title="One shared config for both themes">Single</button>
+            <button type="button" class="seg-btn" data-value="dual" title="Separate config per theme">Dual</button>
+          </div>
+        </div>
+
+        <div class="setting-row column">
+          <span class="setting-label">Backup</span>
+          <div class="btn-row">
+            <button type="button" class="btn" id="exportBtn" title="Settings only — small JSON, no uploaded media">Export</button>
+            <button type="button" class="btn" id="exportFullBtn" title="Settings + uploaded media (image / video) — much larger file">Export + media</button>
+            <button type="button" class="btn" id="importBtn" title="Replace settings from a JSON file">Import…</button>
+            <input type="file" accept="application/json" hidden id="importFile" />
+          </div>
+        </div>
+
         <div class="setting-row">
           <span class="setting-label">Restore defaults</span>
           <button type="button" class="btn" id="resetBtn">Reset settings</button>
         </div>
+          </div>
+        </details>
       </section>
     </div>
   </aside>
@@ -215,7 +330,7 @@
     <main class="content">
       <!-- Clock: click to toggle 12h / 24h -->
       <section class="clock" id="clock" title="Click to switch 12h / 24h">
-        <time class="clock-time" id="clockTime">--:--</time>
+        <time class="clock-time" id="clockTime"><span class="clock-text" id="clockText">--:--</span></time>
       </section>
 
       <!-- Search bar with switchable engines + category suggestions -->

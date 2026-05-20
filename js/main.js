@@ -61,6 +61,21 @@ const FileStore = {
   },
 };
 
+/* ---- Themed setting keys ------------------------------- */
+// In "dual" config mode these are stored separately per theme — so when
+// you flip dark ↔ light the clock, background, fonts (etc.) all swap to
+// the values you saved for that theme. In "single" mode they share one
+// value across themes (the original behaviour).
+const THEMED_KEYS = new Set([
+  "clockStyle", "clockColorMode", "clockColor", "clockOpacity",
+  "clockGlassTint", "clockBlur", "clockSize", "clockOutlineWidth",
+  "bgType", "bgColor",
+  "bgImageUrl", "bgImageMode",
+  "bgVideoUrl", "bgVideoMode",
+  "bgBlur",
+  "fontClock", "fontSearch", "fontCards",
+]);
+
 /* ---- Central settings store ---------------------------- */
 // Single source of truth. Components read with get(), write with set(),
 // and react to changes via onChange() — so the settings menu and the
@@ -68,6 +83,7 @@ const FileStore = {
 const Settings = {
   defaults: {
     theme: "dark",
+    configMode: "single",
     clockFormat: "12",
     clockStyle: "minimal",
     clockColorMode: "theme",
@@ -75,6 +91,8 @@ const Settings = {
     clockOpacity: 100,
     clockGlassTint: "neutral",
     clockBlur: 0,
+    clockSize: 100,
+    clockOutlineWidth: 2,
     engine: "google",
     fontClock: "system",
     fontSearch: "system",
@@ -86,13 +104,35 @@ const Settings = {
     bgVideoUrl: "",
     bgVideoMode: "url",
     bgBlur: 0,
+    showClock: "show",
+    showSearch: "show",
+    showCategories: "show",
+    showThemeBtn: "show",
+    categoryColumns: "3",
     // `categories` default is attached below, after DEFAULT_CATEGORIES exists.
   },
   values: {},
 
+  // Storage-key suffix for a setting: themed keys get __<theme> in dual mode.
+  _suffix(key) {
+    return THEMED_KEYS.has(key) && this.values.configMode === "dual"
+      ? "__" + this.values.theme
+      : "";
+  },
+
   load() {
-    for (const key of Object.keys(this.defaults)) {
-      this.values[key] = store.get(key, this.defaults[key]);
+    // Two-pass: load configMode + theme first (themed keys depend on them),
+    // then load the rest using the now-known suffix.
+    const all = Object.keys(this.defaults);
+    for (const key of all) {
+      if (!THEMED_KEYS.has(key)) {
+        this.values[key] = store.get(key, this.defaults[key]);
+      }
+    }
+    for (const key of all) {
+      if (THEMED_KEYS.has(key)) {
+        this.values[key] = store.get(key + this._suffix(key), this.defaults[key]);
+      }
     }
   },
 
@@ -102,14 +142,64 @@ const Settings = {
 
   set(key, value) {
     if (this.values[key] === value) return;
+    const oldValue = this.values[key];
+    if (key === "configMode") this._migrateConfigMode(oldValue, value);
     this.values[key] = value;
-    store.set(key, value);
+    store.set(key + this._suffix(key), value);
     document.dispatchEvent(
-      new CustomEvent("settingchange", { detail: { key, value } })
+      new CustomEvent("settingchange", { detail: { key, value, oldValue } })
     );
   },
 
+  // Re-read every themed key from storage and notify listeners of changes.
+  // Called when the theme flips while in dual mode.
+  reloadThemed() {
+    const changes = [];
+    for (const key of THEMED_KEYS) {
+      const next = store.get(key + this._suffix(key), this.defaults[key]);
+      if (this.values[key] !== next) {
+        changes.push({ key, value: next, oldValue: this.values[key] });
+        this.values[key] = next;
+      }
+    }
+    // Update all values first, then dispatch — keeps listeners that read
+    // multiple themed keys (e.g. background apply()) seeing consistent state.
+    for (const c of changes) {
+      document.dispatchEvent(new CustomEvent("settingchange", { detail: c }));
+    }
+  },
+
+  // When configMode flips, copy values between single / dual storage so the
+  // switch is seamless (no data loss either direction).
+  _migrateConfigMode(oldMode, newMode) {
+    if (oldMode === newMode) return;
+    if (oldMode === "single" && newMode === "dual") {
+      // Seed both theme namespaces from the current single values.
+      for (const key of THEMED_KEYS) {
+        const v = this.values[key];
+        if (v !== undefined) {
+          store.set(key + "__dark", v);
+          store.set(key + "__light", v);
+        }
+      }
+    } else if (oldMode === "dual" && newMode === "single") {
+      // Promote the current theme's values to the single key.
+      const theme = this.values.theme;
+      for (const key of THEMED_KEYS) {
+        const v = store.get(key + "__" + theme, this.defaults[key]);
+        store.set(key, v);
+      }
+    }
+  },
+
   reset() {
+    // In dual mode also wipe both theme namespaces for themed keys.
+    if (this.values.configMode === "dual") {
+      for (const key of THEMED_KEYS) {
+        localStorage.removeItem("hp." + key + "__dark");
+        localStorage.removeItem("hp." + key + "__light");
+      }
+    }
     for (const key of Object.keys(this.defaults)) {
       this.set(key, this.defaults[key]);
     }
@@ -117,7 +207,7 @@ const Settings = {
 
   onChange(key, handler) {
     document.addEventListener("settingchange", (e) => {
-      if (e.detail.key === key) handler(e.detail.value);
+      if (e.detail.key === key) handler(e.detail.value, e.detail.oldValue);
     });
   },
 };
@@ -294,7 +384,8 @@ function initTheme() {
 
 /* ---- Clock (format / style / colour / blur) ------------ */
 function initClock() {
-  const el = document.getElementById("clockTime");
+  const el = document.getElementById("clockTime"); // outer (glass panel)
+  const textEl = document.getElementById("clockText"); // inner text span
   const panel = document.getElementById("settingsPanel");
 
   function render() {
@@ -303,11 +394,11 @@ function initClock() {
     const m = String(now.getMinutes()).padStart(2, "0");
 
     if (Settings.get("clockFormat") === "24") {
-      el.textContent = `${String(h).padStart(2, "0")}:${m}`;
+      textEl.textContent = `${String(h).padStart(2, "0")}:${m}`;
     } else {
       const period = h >= 12 ? "PM" : "AM";
       h = h % 12 || 12;
-      el.textContent = `${h}:${m} ${period}`;
+      textEl.textContent = `${h}:${m} ${period}`;
     }
   }
 
@@ -329,10 +420,25 @@ function initClock() {
     }
   };
 
-  // Blur: 0-100% -> 0-20px.
+  // Blur: 0-100% -> 0-20px. Applied to the inner text span so the glass
+  // panel (when clockStyle is "glass") stays sharp.
   const applyBlur = () => {
     const px = (Number(Settings.get("clockBlur")) / 100) * 20;
-    el.style.filter = px > 0 ? `blur(${px}px)` : "";
+    textEl.style.filter = px > 0 ? `blur(${px}px)` : "";
+  };
+
+  // Size: percentage (50-200) -> multiplier for the responsive font-size.
+  const applySize = () => {
+    const m = Number(Settings.get("clockSize")) / 100 || 1;
+    el.style.setProperty("--clock-size", m);
+  };
+
+  // Outline stroke width (only used by the Outline clock style).
+  const applyOutlineWidth = () => {
+    el.style.setProperty(
+      "--clock-outline-width",
+      Number(Settings.get("clockOutlineWidth")) + "px"
+    );
   };
 
   // Conditional rows: data-clock-opt="settingKey:value" shows the row
@@ -387,6 +493,32 @@ function initClock() {
   Settings.onChange("clockBlur", syncBlurUI);
   syncBlurUI(Settings.get("clockBlur"));
 
+  /* size slider (50-200% of the responsive font-size) */
+  const sizeInput = panel.querySelector('[data-clock-input="size"]');
+  const sizeValue = panel.querySelector('[data-clock-range-value="size"]');
+  const syncSizeUI = (v) => {
+    if (Number(sizeInput.value) !== v) sizeInput.value = v;
+    sizeValue.textContent = v + "%";
+  };
+  sizeInput.addEventListener("input", () =>
+    Settings.set("clockSize", Number(sizeInput.value))
+  );
+  Settings.onChange("clockSize", syncSizeUI);
+  syncSizeUI(Settings.get("clockSize"));
+
+  /* outline stroke width (only shown when clockStyle is "outline") */
+  const owInput = panel.querySelector('[data-clock-input="outlineWidth"]');
+  const owValue = panel.querySelector('[data-clock-range-value="outlineWidth"]');
+  const syncOWUI = (v) => {
+    if (Number(owInput.value) !== v) owInput.value = v;
+    owValue.textContent = v + "px";
+  };
+  owInput.addEventListener("input", () =>
+    Settings.set("clockOutlineWidth", Number(owInput.value))
+  );
+  Settings.onChange("clockOutlineWidth", syncOWUI);
+  syncOWUI(Settings.get("clockOutlineWidth"));
+
   /* glass tint palette */
   const palette = panel.querySelector("#clockTintPalette");
   CLOCK_TINTS.forEach((tint) => {
@@ -419,11 +551,15 @@ function initClock() {
   Settings.onChange("clockOpacity", applyColor);
   Settings.onChange("clockGlassTint", applyGlassTint);
   Settings.onChange("clockBlur", applyBlur);
+  Settings.onChange("clockSize", applySize);
+  Settings.onChange("clockOutlineWidth", applyOutlineWidth);
 
   applyStyle(Settings.get("clockStyle"));
   applyColor();
   applyGlassTint();
   applyBlur();
+  applySize();
+  applyOutlineWidth();
   syncOptVisibility();
   render();
   setInterval(render, 1000);
@@ -699,6 +835,13 @@ function initSearch() {
 /* ---- Category cards ------------------------------------ */
 function initCategories() {
   const root = document.getElementById("categories");
+
+  // Cards-per-row preference — drives the container's max-width via CSS.
+  const applyCols = (v) => {
+    root.dataset.cols = v || "3";
+  };
+  applyCols(Settings.get("categoryColumns"));
+  Settings.onChange("categoryColumns", applyCols);
 
   function render() {
     root.textContent = "";
@@ -1057,8 +1200,30 @@ function initSettingsMenu() {
   /* reset */
   document.getElementById("resetBtn").addEventListener("click", () => {
     Settings.reset();
-    FileStore.del("bgImageBlob").catch(() => {});
-    FileStore.del("bgVideoBlob").catch(() => {});
+    // Clear every blob namespace (single + per-theme variants).
+    for (const k of [
+      "bgImageBlob", "bgImageBlob__dark", "bgImageBlob__light",
+      "bgVideoBlob", "bgVideoBlob__dark", "bgVideoBlob__light",
+    ]) {
+      FileStore.del(k).catch(() => {});
+    }
+  });
+
+  /* export / import — settings only (small) vs settings + media (large) */
+  document
+    .getElementById("exportBtn")
+    .addEventListener("click", () => exportConfig(false));
+  document
+    .getElementById("exportFullBtn")
+    .addEventListener("click", () => exportConfig(true));
+  const importFile = document.getElementById("importFile");
+  document
+    .getElementById("importBtn")
+    .addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", async () => {
+    const f = importFile.files[0];
+    importFile.value = "";
+    if (f) await importConfig(f);
   });
 }
 
@@ -1073,6 +1238,49 @@ function initFonts() {
   for (const [key, cssVar] of Object.entries(map)) {
     const apply = (value) =>
       root.style.setProperty(cssVar, FONTS[value] || FONTS.system);
+    apply(Settings.get(key));
+    Settings.onChange(key, apply);
+  }
+}
+
+/* ---- Drawer (collapsible section) persistence --------- */
+// Remembers which settings sections the user left open across reloads.
+function initDrawers() {
+  const panel = document.getElementById("settingsPanel");
+  let open;
+  try {
+    open = new Set(JSON.parse(localStorage.getItem("hp.openDrawers")) || ["general"]);
+  } catch {
+    open = new Set(["general"]);
+  }
+
+  panel.querySelectorAll("details[data-drawer]").forEach((d) => {
+    const name = d.dataset.drawer;
+    d.open = open.has(name);
+    d.addEventListener("toggle", () => {
+      if (d.open) open.add(name);
+      else open.delete(name);
+      localStorage.setItem("hp.openDrawers", JSON.stringify([...open]));
+    });
+  });
+}
+
+/* ---- Component visibility toggles --------------------- */
+// Lets the user hide the clock, search bar, categories and the theme
+// button from settings — the gear stays so they can re-open settings.
+function initVisibility() {
+  const map = {
+    showClock: "#clock",
+    showSearch: ".search",
+    showCategories: "#categories",
+    showThemeBtn: "#themeBtn",
+  };
+  for (const [key, sel] of Object.entries(map)) {
+    const el = document.querySelector(sel);
+    if (!el) continue;
+    const apply = (v) => {
+      el.style.display = v === "hide" ? "none" : "";
+    };
     apply(Settings.get(key));
     Settings.onChange(key, apply);
   }
@@ -1111,18 +1319,26 @@ function initBackground() {
   const panel = document.getElementById("settingsPanel");
   const objectUrls = { image: null, video: null }; // tracked so we can revoke
 
+  // Theme-aware IndexedDB key for an uploaded image / video. In dual
+  // config mode each theme has its own slot (bgImageBlob__dark, etc.).
+  function blobKey(kind) {
+    const base = kind === "image" ? "bgImageBlob" : "bgVideoBlob";
+    return Settings.get("configMode") === "dual"
+      ? `${base}__${Settings.get("theme")}`
+      : base;
+  }
+
   // Resolve the source for image/video: a typed URL, or an uploaded blob.
   async function resolveSource(kind) {
     const urlKey = kind === "image" ? "bgImageUrl" : "bgVideoUrl";
     const modeKey = kind === "image" ? "bgImageMode" : "bgVideoMode";
-    const blobKey = kind === "image" ? "bgImageBlob" : "bgVideoBlob";
 
     if (Settings.get(modeKey) === "url") {
       return Settings.get(urlKey) || null;
     }
     let blob = null;
     try {
-      blob = await FileStore.get(blobKey);
+      blob = await FileStore.get(blobKey(kind));
     } catch (e) {
       console.warn("Could not read uploaded background:", e);
     }
@@ -1202,10 +1418,10 @@ function initBackground() {
   /* image + video: URL field + file upload */
   [
     { kind: "image", urlKey: "bgImageUrl", modeKey: "bgImageMode",
-      blobKey: "bgImageBlob", label: "Upload image…" },
+      label: "Upload image…" },
     { kind: "video", urlKey: "bgVideoUrl", modeKey: "bgVideoMode",
-      blobKey: "bgVideoBlob", label: "Upload video…" },
-  ].forEach(({ kind, urlKey, modeKey, blobKey, label }) => {
+      label: "Upload video…" },
+  ].forEach(({ kind, urlKey, modeKey, label }) => {
     const urlInput = panel.querySelector(`[data-bg-input="${kind}-url"]`);
     const fileBtn = panel.querySelector(`[data-bg-upload="${kind}"]`);
     const fileInput = panel.querySelector(`[data-bg-file="${kind}"]`);
@@ -1224,7 +1440,7 @@ function initBackground() {
       const file = fileInput.files[0];
       if (!file) return;
       try {
-        await FileStore.set(blobKey, file);
+        await FileStore.set(blobKey(kind), file);
         Settings.set(modeKey, "upload");
         fileBtn.textContent = "✓ " + file.name;
         apply(); // mode may already be "upload" — re-apply explicitly
@@ -1246,23 +1462,170 @@ function initBackground() {
     syncLabel();
   });
 
+  // When configMode flips, copy the uploaded blobs between single / dual
+  // namespaces so each theme has its own slot — then re-apply.
+  async function migrateBlobs(oldMode, newMode) {
+    if (oldMode === "single" && newMode === "dual") {
+      for (const base of ["bgImageBlob", "bgVideoBlob"]) {
+        const blob = await FileStore.get(base).catch(() => null);
+        if (blob) {
+          await FileStore.set(`${base}__dark`, blob).catch(() => {});
+          await FileStore.set(`${base}__light`, blob).catch(() => {});
+        }
+      }
+    } else if (oldMode === "dual" && newMode === "single") {
+      const theme = Settings.get("theme");
+      for (const base of ["bgImageBlob", "bgVideoBlob"]) {
+        const blob = await FileStore.get(`${base}__${theme}`).catch(() => null);
+        if (blob) await FileStore.set(base, blob).catch(() => {});
+      }
+    }
+  }
+
   ["bgType", "bgColor", "bgImageUrl", "bgImageMode", "bgVideoUrl",
    "bgVideoMode", "bgBlur"]
     .forEach((key) => Settings.onChange(key, apply));
   Settings.onChange("bgType", syncOptVisibility);
+  Settings.onChange("configMode", async (newMode, oldMode) => {
+    await migrateBlobs(oldMode, newMode);
+    apply();
+  });
+  // In dual mode the underlying blob slot depends on the theme even when
+  // bgType / bgMode are identical between themes, so re-apply on theme flip.
+  Settings.onChange("theme", () => {
+    if (Settings.get("configMode") === "dual") apply();
+  });
 
   syncOptVisibility(Settings.get("bgType"));
   apply();
 }
 
+/* ---- Export / Import ----------------------------------- */
+// Bundles every `hp.*` localStorage entry and every known IndexedDB
+// blob into a single JSON file. Import wipes and restores.
+
+const BLOB_KEYS = [
+  "bgImageBlob", "bgImageBlob__dark", "bgImageBlob__light",
+  "bgVideoBlob", "bgVideoBlob__dark", "bgVideoBlob__light",
+];
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1] || "");
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function base64ToBlob(base64, type) {
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: type || "application/octet-stream" });
+}
+
+async function exportConfig(includeMedia = false) {
+  const data = {
+    schema: 1,
+    exportedAt: new Date().toISOString(),
+    includesMedia: includeMedia,
+    settings: {},
+    files: {},
+  };
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("hp.")) data.settings[k] = localStorage.getItem(k);
+  }
+  if (includeMedia) {
+    for (const key of BLOB_KEYS) {
+      const blob = await FileStore.get(key).catch(() => null);
+      if (blob) {
+        data.files[key] = {
+          type: blob.type,
+          data: await blobToBase64(blob),
+        };
+      }
+    }
+  }
+
+  const json = JSON.stringify(data, null, 2);
+  const file = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a");
+  a.href = url;
+  const suffix = includeMedia ? "-full" : "";
+  a.download = `metins-startpage${suffix}-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importConfig(file) {
+  let data;
+  try {
+    data = JSON.parse(await file.text());
+  } catch {
+    alert("That file isn't a valid config JSON.");
+    return;
+  }
+  if (!data || typeof data.settings !== "object") {
+    alert("Config file is missing a `settings` object.");
+    return;
+  }
+  if (!confirm("Importing will replace your current settings and uploaded media. Continue?")) {
+    return;
+  }
+
+  // Wipe existing hp.* settings.
+  const toRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("hp.")) toRemove.push(k);
+  }
+  toRemove.forEach((k) => localStorage.removeItem(k));
+  // Only wipe blobs if the import actually carries media; otherwise the
+  // user's existing uploads would be lost for a settings-only restore.
+  const hasMedia = data.files && Object.keys(data.files).length > 0;
+  if (hasMedia) {
+    for (const k of BLOB_KEYS) await FileStore.del(k).catch(() => {});
+  }
+
+  // Restore
+  for (const [k, v] of Object.entries(data.settings)) {
+    localStorage.setItem(k, v);
+  }
+  for (const [k, v] of Object.entries(data.files || {})) {
+    if (!v || typeof v.data !== "string") continue;
+    try {
+      await FileStore.set(k, base64ToBlob(v.data, v.type));
+    } catch (e) {
+      console.warn("Failed to restore blob:", k, e);
+    }
+  }
+
+  // Easiest way to re-bind everything to the new state is a full reload.
+  location.reload();
+}
+
 /* ---- Boot ---------------------------------------------- */
 Settings.load();
+
+// In dual mode, flipping theme swaps every themed setting to that theme's
+// stored value. Wire this before init* so the cascade fires consistently.
+Settings.onChange("theme", () => {
+  if (Settings.get("configMode") === "dual") Settings.reloadThemed();
+});
+
 initTheme();
 initClock();
 initFonts();
 initSearch();
 initCategories();
 initSettingsMenu();
+initDrawers();
 initCategoriesEditor();
 initBackground();
+initVisibility();
 initCursorGlow();

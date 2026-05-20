@@ -257,8 +257,9 @@ button {
 }
 
 .clock-time {
+  display: inline-block;
   font-family: var(--font-clock);
-  font-size: clamp(4rem, 14vw, 9rem);
+  font-size: calc(clamp(4rem, 14vw, 9rem) * var(--clock-size, 1));
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
@@ -266,29 +267,35 @@ button {
   color: var(--clock-color);
 }
 
-/* Clock styles / themes — all honour --clock-color */
-.clock-time--outline {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--clock-color);
+/* Inner text span — the clock-blur filter only affects this, so the
+   glass panel itself isn't blurred when both are on. */
+.clock-text {
+  display: inline-block;
+  color: inherit;
 }
 
-.clock-time--glow {
+/* Clock styles / themes — text effects target the inner text span */
+.clock-time--outline .clock-text {
+  color: transparent;
+  -webkit-text-stroke: var(--clock-outline-width, 2px) var(--clock-color);
+}
+
+.clock-time--glow .clock-text {
   color: var(--clock-color);
   text-shadow: 0 0 18px currentColor, 0 0 44px currentColor;
 }
 
-.clock-time--gradient {
+.clock-time--gradient .clock-text {
   background: linear-gradient(135deg, var(--clock-color), #c678dd);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* Frosted-glass panel around the clock; tint set by the palette */
+/* Glass panel — applied to the container so the inner-text blur leaves
+   the panel itself sharp */
 .clock-time--glass {
-  display: inline-block;
   padding: 0.1em 0.32em;
-  color: var(--clock-color);
   background: var(--clock-glass-tint, rgba(255, 255, 255, 0.07));
   border: 1px solid var(--glass-border);
   border-radius: 0.16em;
@@ -435,8 +442,14 @@ button {
   justify-content: center;
   gap: 18px;
   width: 100%;
-  max-width: 760px;
+  max-width: 760px; /* default 3-per-row, overridden by [data-cols] */
 }
+
+/* Cards-per-row preference — wider container lets more cards fit before wrap */
+.categories[data-cols="3"] { max-width: 760px; }
+.categories[data-cols="4"] { max-width: 920px; }
+.categories[data-cols="5"] { max-width: 1140px; }
+.categories[data-cols="6"] { max-width: 1380px; }
 
 /* Visual improvement #2: 3D frosted-glass cards */
 .cat-card {
@@ -709,6 +722,56 @@ body.settings-open .page {
 .btn:hover {
   background: var(--surface-hover);
   border-color: var(--border-strong);
+}
+
+/* Cluster of buttons that should sit side by side (e.g. Export / Import) */
+.btn-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Collapsible drawer inside a settings section (Components show/hide) */
+.drawer-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.drawer-summary::-webkit-details-marker {
+  display: none;
+}
+
+.drawer-summary::before {
+  content: "▸";
+  font-size: 0.7rem;
+  color: var(--fg-dim);
+  transition: transform 0.2s ease;
+}
+
+.drawer[open] > .drawer-summary::before {
+  transform: rotate(90deg);
+}
+
+.drawer-summary .settings-section-title {
+  margin: 0;
+}
+
+.drawer-hint {
+  font-size: 0.72rem;
+  color: var(--fg-dim);
+  margin-left: auto;
+}
+
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
 }
 
 /* Text / URL input (background image & video URLs) */

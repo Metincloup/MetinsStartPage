@@ -73,6 +73,27 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - Açılış/kapanış animasyonu var.
 - Üstte bir kapatma (X) butonu ve dişli ikonu var.
 - Örnek bölümler: General (toggle'lar, radio gruplar), Misc (text area, butonlar), vb.
+- Tüm bölümler artık **collapsible drawer** (`<details>`) — bölüm başlığına tıklayınca açılır/kapanır. Açık/kapalı durumu localStorage'da (`hp.openDrawers`) saklanır. Default: yalnızca **General** açık.
+- **Categories** bölümünde "Per row" select'i (3/4/5/6) — kart container'ının `max-width`'i `data-cols` attribute ile değişir, satır başına maks kart sayısını kontrol eder.
+
+### Config Mode (Tek / Çift)
+
+- Misc bölümünde **Config mode** seg kontrolü: `Single` veya `Dual`.
+- **Single**: tüm görsel ayarlar (saat, fontlar, arka plan) iki temada da paylaşılır.
+- **Dual**: saat / fontlar / arka plan ayarları temaya göre ayrı saklanır (`hp.<key>__dark`, `hp.<key>__light`). Theme değiştirildiğinde ayarlar otomatik swap olur.
+- Mod değiştirme migration: single→dual ise mevcut değerler iki tema namespace'ine kopyalanır; dual→single ise aktif temanın değerleri single key'e taşınır. Yüklenen IndexedDB blob'ları (arka plan resim/videosu) da aynı şekilde namespaced ve migration'da kopyalanır.
+
+### Components (Görünürlük)
+
+- Ayarlarda **Components** açılır paneli (collapsible drawer) — `<details>` ile.
+- İçinde her ana bileşen için **Show / Hide** seg'i: Clock, Search bar, Categories, Theme button.
+- Dişli butonu hep görünür kalır (settings'e giriş noktası); kullanıcı isterse onun dışındaki her şeyi gizleyip sade bir ekran elde edebilir.
+
+### Backup (Export / Import)
+
+- Misc → **Backup** satırında üç buton: **Export** (sadece ayarlar — küçük JSON), **Export + media** (ayarlar + yüklenen görsel/video, base64 — çok daha büyük JSON), **Import**.
+- Export: tüm `hp.*` localStorage anahtarları; `+ media` modunda ek olarak IndexedDB blob'ları da base64'le pakete katılır.
+- Import: dosya seçilir, onay alınır, mevcut ayarlar silinip JSON'dan geri yüklenir; medya sadece içe aktarılan dosya media taşıyorsa wipe edilir (settings-only import mevcut upload'ları korur). Bitince sayfa yenilenir.
 
 ## Görsel İyileştirmeler (Visual Improvements)
 
