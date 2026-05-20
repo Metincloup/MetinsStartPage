@@ -41,7 +41,9 @@ Kaynak görseller: `./sketches/{1,2,3}.png`
 - Glass teması: saat metni buzlu cam panel içinde; camı hafifçe renklendiren tint paleti (~6 düşük-alfa renk) sadece bu temada görünür.
 - Saatin yazı tipi ayrıca "Fonts" ayarından seçilir (System/Serif/Mono/Rounded) — tema efektiyle birleşebilir.
 - Renk: "Theme" (temadan gelen) veya "Custom" (renk seçici + opaklık slider'ı → hex `rgba()`'ya çevrilir, şeffaflık desteklenir). `--clock-color` değişkeniyle tüm saat stillerine uygulanır.
-- Blur slider (0-100% → 0-20px).
+- Blur slider (0-100% → 0-20px) — sadece iç metne uygulanır, glass paneli keskin kalır.
+- Boyut slider'ı (50-200%) — `--clock-size` değişkeniyle `clamp()` çarpılır; responsive davranış korunur.
+- Outline kalınlığı slider'ı (1-8px) sadece **Outline** teması seçildiğinde görünür; `-webkit-text-stroke` genişliğini kontrol eder.
 - 24 saat ve 12 saat versiyonları.
 
 ### Search Bar (Arama Çubuğu)

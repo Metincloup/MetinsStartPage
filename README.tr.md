@@ -15,7 +15,9 @@ bağımlılığı yok.
 - Canlı saat — tıklayarak 12 / 24 saat formatları arasında geçiş
 - Beş görsel tema: **Minimal**, **Outline**, **Glow**, **Gradient**, **Glass**
 - Özel renk + opaklık (hex picker + slider, `rgba` üretir)
-- Blur slider'ı
+- Blur slider'ı (sadece metni bulanıklaştırır — cam panel keskin kalır)
+- Boyut slider'ı (responsive font-size'ın 50–200%'ü)
+- Outline kalınlığı slider'ı (sadece Outline teması seçiliyken görünür)
 - **Glass** temasının kendi renk paleti (6 yumuşak ton, camı hafifçe boyar)
 
 ### Arama
@@ -35,6 +37,7 @@ bağımlılığı yok.
 
 - Ayarlardaki accordion editörden kategori ekle / sil / yeniden adlandır /
   **sırasını değiştir**; site (item) için de aynı işlemler
+- Ayarlardan satır başına kart sayısı (3 / 4 / 5 / 6)
 - İkonlar gerçek site favicon'larıdır (DuckDuckGo ikon servisi); yüklenemezse
   emoji'ye otomatik fallback
 - Bir kategori 5'ten fazla item içerdiğinde kart kendi içinde scroll olur
@@ -66,7 +69,15 @@ bağımlılığı yok.
 
 - Soldan kayarak açılır, viewport'un `clamp(340px, 32%, 440px)` kadarını
   kaplar, sayfanın geri kalanı kalan alana sıkışır
-- Bölümler: **General**, **Fonts**, **Background**, **Categories**, **Misc**
+- Bölümler: **General**, **Fonts**, **Background**, **Components**,
+  **Categories**, **Misc** — her biri collapsible drawer; açık / kapalı
+  durumu yenilemeler arasında hatırlanır
+- **Components** drawer — saat, arama çubuğu, kategoriler ve tema butonunu
+  ayrı ayrı gizleyebilirsin; istersen sadece dişli kalır
+- **Config mode**: `Single` (tek paylaşılan ayar) veya `Dual` (saat, fontlar
+  ve arka plan temaya göre ayrı saklanır — dark ↔ light geçişinde swap'lanır)
+- **Backup**: ayarları JSON olarak indir (veya ayarlar + yüklenen medya);
+  başka tarayıcıda / cihazda geri yüklemek için import et
 - Komponent başına font seçimi (`System` / `Serif` / `Mono` / `Rounded`) —
   saat, arama çubuğu ve kartlar için ayrı ayrı; saat temalarıyla istediğin
   gibi birleşir

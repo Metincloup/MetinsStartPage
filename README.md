@@ -14,7 +14,9 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 - Live time, click to flip between 12-hour and 24-hour formats
 - Five visual themes: **Minimal**, **Outline**, **Glow**, **Gradient**, **Glass**
 - Custom colour with opacity (`rgba` via a hex picker + opacity slider)
-- Blur amount slider
+- Blur slider (applied to the text only — the glass panel stays sharp)
+- Size slider (50–200% of the responsive base font-size)
+- Outline width slider (only shown when the Outline theme is selected)
 - The **Glass** theme has a tint palette (six soft colours)
 
 ### Search
@@ -34,6 +36,7 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 
 - Add / rename / remove / **reorder** categories and the sites inside them
   from the settings menu (accordion editor with an item-count badge)
+- Cards-per-row preference in settings (3 / 4 / 5 / 6)
 - Icons are real site favicons (DuckDuckGo's icon service) with an
   emoji fallback when the favicon fails to load
 - Cards scroll internally when a category has more than five items
@@ -66,7 +69,15 @@ Vanilla HTML, CSS and JavaScript — no build step, no dependencies.
 
 - Slides in from the left, taking `clamp(340px, 32%, 440px)` of the viewport
   and squashing the rest of the page to make room
-- Sections: **General**, **Fonts**, **Background**, **Categories**, **Misc**
+- Sections: **General**, **Fonts**, **Background**, **Components**,
+  **Categories**, **Misc** — each is a collapsible drawer; open / closed
+  state is remembered across reloads
+- **Components** drawer — show / hide the clock, search bar, categories and
+  the theme button so only the gear remains if you want a minimal page
+- **Config mode**: `Single` (one shared config) or `Dual` (clock, fonts and
+  background stored per theme — switching dark ↔ light swaps them)
+- **Backup**: export settings as JSON (or settings + uploaded media); import
+  to restore on another browser / device
 - Per-component font choice (`System` / `Serif` / `Mono` / `Rounded`) for
   the clock, the search bar and the cards — combine freely with the clock
   themes
